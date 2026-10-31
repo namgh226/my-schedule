@@ -29,7 +29,7 @@
 4. 왼쪽 상단 ⚙️(톱니바퀴) → **프로젝트 설정** → 아래로 스크롤 → **"내 앱"** → `</>` (웹 앱) 아이콘 클릭
 5. 앱 닉네임 입력 후 등록 → 화면에 나오는 `firebaseConfig` 코드 전체를 복사해두기
 
-> 💡 이 `firebaseConfig` 값이 아래 2단계에서 필요합니다.
+> 💡 이 `firebaseConfig` 값이 아래 3단계에서 필요합니다.
 
 ---
 
@@ -63,3 +63,215 @@ window.FIREBASE_CONFIG = {
 };
 
 window.DATA_GO_KR_API_KEY = "여기에 본인 API 키 입력";
+```
+
+4. 저장합니다.
+
+---
+
+## 📂 파일 배치
+
+아래처럼 **같은 폴더**에 모든 파일을 넣어주세요.
+
+```
+my-schedule/
+ ├─ index.html
+ ├─ config.js          ← 방금 만든 파일
+ ├─ manifest.json
+ ├─ sw.js
+ ├─ icon-192.png
+ └─ icon-512.png
+```
+
+이 폴더를 웹호스팅(예: Github Pages, Netlify, Vercel 등)에 올리면 접속 가능합니다.
+(호스팅 방법은 별도 문의 시 안내드릴 수 있습니다.)
+
+---
+
+## 📱 모바일에 앱처럼 설치하는 방법
+
+1. 배포된 주소를 모바일 브라우저(Chrome/Safari)로 접속
+2. **공유 버튼 → "홈 화면에 추가"** 선택
+3. 설치 완료! 이후 앱 아이콘을 눌러서 바로 실행 가능
+
+---
+
+## 🔑 처음 실행 시
+
+1. 처음 접속하면 **PIN 입력 화면**이 나옵니다.
+2. 기본 PIN은 `1234`입니다. (로그인 후 우측 상단 **🔑 PIN변경**에서 바로 변경 권장)
+3. 로그인 후 **👤 이름변경**에서 본인 이름을 입력하면 상단에 표시됩니다.
+
+---
+
+## 🔒 Firebase 보안 규칙 (중요 — 꼭 읽어주세요)
+
+Firebase Realtime Database를 **"테스트 모드"**로 생성하면, 기본적으로
+**누구나 해당 DB 주소를 알면 데이터를 읽고 쓸 수 있는 상태**입니다.
+앱 화면의 PIN 입력은 "화면 잠금"일 뿐, Firebase 서버 자체를 막아주지는 않습니다.
+
+### 📌 현재 기본 규칙 (테스트 모드, 생성 시 자동 적용)
+
+```json
+{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}
+```
+
+> ⚠️ 개인적으로 가볍게 사용하는 용도라면 당장 큰 문제는 없지만,
+> DB 주소나 구조가 외부에 노출되면 누구나 내 근무 데이터를
+> 보거나 바꿀 수 있다는 점은 꼭 인지하고 계시는 게 좋습니다.
+
+### ✅ 옵션 1 — 간단 버전 (PIN 값만 외부 접근 차단)
+
+**코드 수정 없이 규칙만 교체하면 됩니다.**
+
+```json
+{
+  "rules": {
+    "myPin": {
+      ".read": false,
+      ".write": false
+    },
+    "myName": {
+      ".read": true,
+      ".write": true
+    },
+    "myScheduleData": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
+```
+
+> ⚠️ 참고: 이 규칙을 적용하면 앱이 PIN을 Firebase에서 불러오지 못해,
+> PIN 변경 기능이 정상 동작하지 않을 수 있습니다. 가볍게 막아두는
+> 용도로만 생각해주세요.
+
+---
+
+### ✅ 옵션 2 — 권장 버전 (Firebase 익명 인증 추가)
+
+가장 현실적인 보안 방법입니다. **규칙 교체 + 코드 2곳 수정**이 필요합니다.
+아래 순서를 **그대로** 따라하시면 됩니다. (코딩을 몰라도 복사/붙여넣기만 하면 됩니다)
+
+#### ① Firebase 콘솔에서 익명 로그인 기능 켜기
+
+1. Firebase 콘솔 → 왼쪽 메뉴 **Build → Authentication** 클릭
+2. **"시작하기"** 버튼 클릭
+3. 로그인 방법 목록에서 **"익명(Anonymous)"** 항목 클릭 → 사용 설정(토글 ON) → 저장
+
+#### ② Realtime Database 규칙 교체
+
+```
+Firebase 콘솔 → Realtime Database → 규칙(Rules) 탭
+```
+
+아래 내용을 붙여넣고 **"게시(Publish)"** 클릭:
+
+```json
+{
+  "rules": {
+    "myPin": { ".read": "auth != null", ".write": "auth != null" },
+    "myName": { ".read": "auth != null", ".write": "auth != null" },
+    "myScheduleData": { ".read": "auth != null", ".write": "auth != null" }
+  }
+}
+```
+
+#### ③ `index.html` 파일 수정 (2곳)
+
+**수정 위치 1 — `<head>` 안, Firebase SDK 스크립트 부분**
+
+아래처럼 생긴 부분을 찾으세요:
+
+```html
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="./config.js"></script>
+```
+
+`firebase-database-compat.js` 줄 **바로 다음**, `config.js` 줄 **바로 위**에
+한 줄을 추가하세요:
+
+```html
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="./config.js"></script>
+```
+
+**수정 위치 2 — `<script>` 안의 `initFirebase` 함수**
+
+아래처럼 생긴 부분을 찾으세요 (Ctrl+F로 `function initFirebase` 검색):
+
+```javascript
+function initFirebase(){
+  const syncEl = document.getElementById('syncStatus');
+  db.ref('.info/connected').on('value', snap=>{
+```
+
+이 부분을 아래처럼 **맨 첫 줄에 코드 추가**해서 바꿔주세요:
+
+```javascript
+function initFirebase(){
+  firebase.auth().signInAnonymously().catch(err=>{
+    console.error('익명 로그인 실패:', err);
+  });
+  const syncEl = document.getElementById('syncStatus');
+  db.ref('.info/connected').on('value', snap=>{
+```
+
+(= `const syncEl = ...` 줄 바로 위에 `firebase.auth().signInAnonymously()...` 3줄만 추가하면 끝입니다)
+
+#### ④ 적용 확인
+
+1. 수정한 `index.html`을 저장하고 다시 접속
+2. 평소처럼 PIN 입력 후 정상적으로 달력이 보이고 동기화되면 성공입니다
+3. 만약 "🔴 오프라인"이 계속 뜨거나 동기화가 안 되면:
+   - Authentication에서 익명 로그인이 정말 켜져 있는지 다시 확인
+   - 브라우저 콘솔(F12 → Console 탭)에서 에러 메시지 확인
+
+> 💡 코드 수정이 막막하게 느껴진다면, 메모장으로 `index.html`을 열고
+> `Ctrl+F`로 위에 적힌 문구를 찾아서 그 줄 근처에 추가하는 식으로
+> 진행하시면 됩니다. 전체 구조를 바꾸는 게 아니라 **딱 4줄 추가**하는
+> 작업입니다.
+
+---
+
+### 📊 옵션 비교
+
+| 옵션 | 보안 수준 | 코드 수정 필요 여부 | 난이도 |
+|---|---|---|---|
+| 기본(테스트 모드) | ❌ 없음 | 없음 | - |
+| 옵션 1(PIN 차단) | ⚠️ 낮음 | 없음 (규칙만 교체) | 쉬움 |
+| 옵션 2(익명 인증) | ✅ 양호 | 있음 (4줄 추가) | 보통 |
+
+---
+
+## ⚠️ 주의사항
+
+- `config.js` 파일은 **본인의 Firebase/API 키가 담긴 개인 파일**입니다.
+  - 다른 사람과 공유하거나 Github 등 공개된 곳에 올리지 마세요.
+  - 이 파일을 공유하면 다른 사람이 내 근무 데이터에 접근할 수 있습니다.
+- 공공데이터포털 API는 **본인 계정으로 직접 신청**받아 사용하세요. (여러 명이 한 키를 같이 쓰면 호출 제한에 걸릴 수 있습니다)
+
+---
+
+## ❓ 문제가 생겼을 때
+
+| 증상 | 확인해볼 것 |
+|---|---|
+| 화면에 "config.js 누락" 경고가 뜸 | `config.js` 파일이 `index.html`과 같은 폴더에 있는지 확인 |
+| 동기화 상태가 "🔴 오프라인"으로 뜸 | Firebase `databaseURL`이 정확한지 확인 |
+| 공휴일이 표시되지 않음 | 공공데이터포털 API 키가 정확한지, 승인이 완료됐는지 확인 |
+| PIN이 기억나지 않음 | Firebase 콘솔 → Realtime Database → `myPin` 값을 직접 확인/수정 |
+| 보안 규칙 적용 후 동기화가 안 됨 | Authentication에서 익명 로그인이 켜져 있는지, 코드 4줄이 정확히 추가됐는지 확인 |
+
+---
+
+문의사항이 있으면 템플릿을 전달해준 사람에게 연락주세요. 🙂
