@@ -2,8 +2,9 @@
 
 > 💡 **이 파일(README.md) 보는 방법**: 메모장으로 열어도 내용은 다 보이지만
 > `#`, `**` 같은 기호가 그대로 보여서 조금 불편할 수 있어요.
-> 예쁘게 보려면 **VS Code**(파일 열고 `Ctrl+Shift+V`)나 **Typora** 같은
-> 마크다운 뷰어를 사용하시거나, Github에 올려서 보시는 걸 추천합니다!
+> 가장 편한 방법은 **아래 "🌐 1단계: Github에 올리기"를 먼저 진행**해서
+> Github 저장소 화면에서 이 README를 예쁘게 렌더링된 상태로 보는 것입니다.
+> (VS Code나 Typora 같은 마크다운 뷰어로 로컬에서 봐도 됩니다)
 
 개인 근무 스케줄을 실시간으로 기록하고 동기화할 수 있는 웹앱입니다.
 스마트폰에 설치하면 앱처럼 사용할 수 있습니다(PWA).
@@ -22,9 +23,60 @@
 
 ---
 
-## 🚀 설치 방법 (딱 3단계)
+## 🌐 1단계: Github에 올리기 (호스팅)
 
-### 1단계. Firebase 프로젝트 만들기 (무료)
+가장 먼저 할 일입니다. 이 단계를 진행하면 이후부터는 Github 저장소
+화면에서 이 README를 예쁘게 보면서 나머지 설정을 따라할 수 있습니다.
+
+**준비물**: Github 계정 (무료 가입: https://github.com)
+
+### ① 저장소(Repository) 만들기
+
+1. Github 로그인 → 우측 상단 **"+"** → **"New repository"** 클릭
+2. Repository name에 **`my-schedule`** 입력 (아래 "경로 주의사항" 참고)
+3. **Public**(공개) 선택 → **Create repository** 클릭
+
+> ⚠️ Public으로 만들면 저장소 내용이 전체 공개됩니다. 그래서 이 단계에서는
+> **`config.js`를 아직 올리지 않고, `config.example.js`만 올립니다.**
+> `config.js`는 나중에 4단계에서 내용을 다 채운 뒤 마지막에 업로드합니다.
+
+### ② 파일 업로드 (config.js 제외)
+
+1. 저장소 화면에서 **"uploading an existing file"** 클릭
+2. `README.md`, `index.html`, `config.example.js`, `manifest.json`, `sw.js`,
+   `icon-192.png`, `icon-512.png`를 전부 드래그해서 업로드
+   (※ `config.js`는 아직 없는 상태이니 올리지 않습니다)
+3. 하단에 커밋 메시지 입력(예: "초기 업로드") → **Commit changes** 클릭
+
+### ③ Github Pages 활성화
+
+1. 저장소 상단 메뉴 **Settings** 클릭
+2. 왼쪽 메뉴 **Pages** 클릭
+3. **Source**를 **"Deploy from a branch"**로 설정
+4. Branch는 **main**(또는 master), 폴더는 **/ (root)** 선택 → **Save**
+5. 몇 분 기다리면 아래와 같은 주소가 생성됩니다:
+   ```
+   https://[본인아이디].github.io/my-schedule/
+   ```
+
+> 🙂 지금 바로 이 주소로 접속해보면 PIN 화면은 뜨지만, Firebase 설정이
+> 없어서 아직 정상 동작하지는 않습니다. 걱정하지 마세요! 아래 2~4단계를
+> 마치면 완전히 동작합니다.
+
+### ④ 경로 주의사항 (중요)
+
+현재 코드의 `manifest.json`, `sw.js`, `index.html`이 **`/my-schedule/`**
+경로를 기준으로 작성되어 있어서, Github 저장소 이름도 반드시
+**`my-schedule`**로 맞춰야 아이콘/오프라인 캐싱이 정상 동작합니다.
+
+| 저장소 이름 | 결과 |
+|---|---|
+| `my-schedule` | ✅ 바로 정상 동작 |
+| 다른 이름(예: `work-cal`) | ⚠️ 경로 불일치로 오류 가능 (코드 내 경로 전부 수정 필요) |
+
+---
+
+## 🔥 2단계: Firebase 프로젝트 만들기 (무료)
 
 1. https://console.firebase.google.com 접속 → 로그인
 2. **"프로젝트 추가"** 클릭 → 이름 입력(예: `my-schedule`) → 생성
@@ -34,11 +86,11 @@
 4. 왼쪽 상단 ⚙️(톱니바퀴) → **프로젝트 설정** → 아래로 스크롤 → **"내 앱"** → `</>` (웹 앱) 아이콘 클릭
 5. 앱 닉네임 입력 후 등록 → 화면에 나오는 `firebaseConfig` 코드 전체를 복사해두기
 
-> 💡 이 `firebaseConfig` 값이 아래 3단계에서 필요합니다.
+> 💡 이 `firebaseConfig` 값이 아래 4단계에서 필요합니다.
 
 ---
 
-### 2단계. 공공데이터포털 API 키 발급받기 (공휴일 자동 조회용)
+## 🔑 3단계: 공공데이터포털 API 키 발급받기 (공휴일 자동 조회용)
 
 1. https://www.data.go.kr 접속 → 회원가입/로그인
 2. 검색창에 **"특일정보"** 검색
@@ -49,12 +101,12 @@
 
 ---
 
-### 3단계. `config.js` 파일 만들기
+## 📝 4단계: `config.js` 만들고 Github에 업로드
 
-1. 받은 `config.example.js` 파일을 복사합니다.
+1. `config.example.js` 파일을 로컬 컴퓨터에서 복사합니다.
 2. 복사한 파일 이름을 **`config.js`**로 변경합니다.
-3. 메모장(또는 편집기)으로 열어서, 1단계에서 복사한 `firebaseConfig` 값과
-   2단계에서 받은 API 키를 아래처럼 채워 넣습니다.
+3. 메모장(또는 편집기)으로 열어서, 2단계에서 복사한 `firebaseConfig` 값과
+   3단계에서 받은 API 키를 아래처럼 채워 넣습니다.
 
 ```javascript
 window.FIREBASE_CONFIG = {
@@ -71,75 +123,20 @@ window.DATA_GO_KR_API_KEY = "여기에 본인 API 키 입력";
 ```
 
 4. 저장합니다.
+5. 1단계에서 만든 Github 저장소로 돌아가서, **"Add file" → "Upload files"**
+   클릭 → 지금 만든 `config.js` 파일을 업로드 → Commit
 
----
-
-## 📂 파일 배치
-
-아래처럼 **같은 폴더**에 모든 파일을 넣어주세요.
-
-```
-my-schedule/
- ├─ index.html
- ├─ config.js          ← 방금 만든 파일
- ├─ manifest.json
- ├─ sw.js
- ├─ icon-192.png
- └─ icon-512.png
-```
-
-이 폴더를 웹호스팅에 올리면 어디서든 접속 가능합니다.
-구체적인 호스팅 방법은 아래 "🌐 호스팅하기" 섹션을 참고하세요.
-
----
-
-## 🌐 호스팅하기 (Github Pages)
-
-파일을 인터넷에 올려야 모바일/PC 어디서든 접속할 수 있습니다.
-무료로 쉽게 할 수 있는 **Github Pages**를 이용한 방법을 안내합니다.
-
-**준비물**: Github 계정 (무료 가입: https://github.com)
-
-### ① 저장소(Repository) 만들기
-
-1. Github 로그인 → 우측 상단 **"+"** → **"New repository"** 클릭
-2. Repository name에 **`my-schedule`** 입력 (아래 "경로 주의사항" 참고)
-3. **Public**(공개) 선택 → **Create repository** 클릭
-
-> ⚠️ Public으로 만들면 저장소 내용이 전체 공개됩니다. 저장소에
-> `config.js`를 올릴 경우 그 안의 Firebase/API 키도 함께 공개된다는
-> 점을 꼭 인지하고 있어야 합니다. (완전히 숨기고 싶으면 Private
-> 저장소가 필요하며, Github Pages를 Private 저장소에서 쓰려면
-> 유료 플랜이 필요할 수 있습니다)
-
-### ② 파일 업로드
-
-1. 저장소 화면에서 **"uploading an existing file"** 클릭
-2. `index.html`, `config.js`(본인이 작성한 파일), `manifest.json`, `sw.js`,
-   `icon-192.png`, `icon-512.png`를 전부 드래그해서 업로드
-3. 하단에 커밋 메시지 입력(예: "초기 업로드") → **Commit changes** 클릭
-
-### ③ Github Pages 활성화
-
-1. 저장소 상단 메뉴 **Settings** 클릭
-2. 왼쪽 메뉴 **Pages** 클릭
-3. **Source**를 **"Deploy from a branch"**로 설정
-4. Branch는 **main**(또는 master), 폴더는 **/ (root)** 선택 → **Save**
-5. 몇 분 기다리면 아래와 같은 주소가 생성됩니다:
+6. 1~2분 정도 기다린 후 아래 주소로 다시 접속해보세요:
    ```
    https://[본인아이디].github.io/my-schedule/
    ```
+   PIN 입력 후 달력이 정상적으로 보이고 "🟢 실시간 동기화 연결됨"이
+   뜨면 완료입니다! 🎉
 
-### ④ 경로 주의사항 (중요)
-
-현재 코드의 `manifest.json`, `sw.js`, `index.html`이 **`/my-schedule/`**
-경로를 기준으로 작성되어 있어서, Github 저장소 이름도 반드시
-**`my-schedule`**로 맞춰야 아이콘/오프라인 캐싱이 정상 동작합니다.
-
-| 저장소 이름 | 결과 |
-|---|---|
-| `my-schedule` | ✅ 바로 정상 동작 |
-| 다른 이름(예: `work-cal`) | ⚠️ 경로 불일치로 오류 가능 (코드 내 경로 전부 수정 필요) |
+> ⚠️ `config.js`에는 본인의 Firebase/API 키가 들어있습니다. Public
+> 저장소에 올리면 이 정보도 함께 공개된다는 점을 꼭 인지하세요.
+> 완전히 숨기고 싶다면 아래 "🔒 Firebase 보안 규칙" 섹션을 참고해
+> 최소한의 접근 제한을 걸어두시길 권장합니다.
 
 ---
 
@@ -285,9 +282,10 @@ function initFirebase(){
 
 #### ④ 적용 확인
 
-1. 수정한 `index.html`을 저장하고 다시 접속
-2. 평소처럼 PIN 입력 후 정상적으로 달력이 보이고 동기화되면 성공입니다
-3. 만약 "🔴 오프라인"이 계속 뜨거나 동기화가 안 되면:
+1. 수정한 `index.html`을 Github 저장소에 다시 업로드(덮어쓰기)
+2. 1~2분 기다린 후 배포 주소로 다시 접속
+3. 평소처럼 PIN 입력 후 정상적으로 달력이 보이고 동기화되면 성공입니다
+4. 만약 "🔴 오프라인"이 계속 뜨거나 동기화가 안 되면:
    - Authentication에서 익명 로그인이 정말 켜져 있는지 다시 확인
    - 브라우저 콘솔(F12 → Console 탭)에서 에러 메시지 확인
 
@@ -311,9 +309,8 @@ function initFirebase(){
 ## ⚠️ 주의사항
 
 - `config.js` 파일은 **본인의 Firebase/API 키가 담긴 개인 파일**입니다.
-  - 다른 사람과 공유하거나 Public Github 저장소 등 공개된 곳에
-    그대로 올리지 마세요.
-  - 이 파일을 공유하면 다른 사람이 내 근무 데이터에 접근할 수 있습니다.
+  - Public 저장소에 올리면 이 정보도 함께 공개된다는 점을 꼭 인지하세요.
+  - 다른 사람과 공유하지 마세요.
 - 공공데이터포털 API는 **본인 계정으로 직접 신청**받아 사용하세요.
   (여러 명이 한 키를 같이 쓰면 호출 제한에 걸릴 수 있습니다)
 
@@ -323,7 +320,7 @@ function initFirebase(){
 
 | 증상 | 확인해볼 것 |
 |---|---|
-| 화면에 "config.js 누락" 경고가 뜸 | `config.js` 파일이 `index.html`과 같은 폴더에 있는지 확인 |
+| 화면에 "config.js 누락" 경고가 뜸 | `config.js` 파일을 Github 저장소에 업로드했는지 확인 |
 | 동기화 상태가 "🔴 오프라인"으로 뜸 | Firebase `databaseURL`이 정확한지 확인 |
 | 공휴일이 표시되지 않음 | 공공데이터포털 API 키가 정확한지, 승인이 완료됐는지 확인 |
 | PIN이 기억나지 않음 | Firebase 콘솔 → Realtime Database → `myPin` 값을 직접 확인/수정 |
