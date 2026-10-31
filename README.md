@@ -83,14 +83,64 @@ my-schedule/
  └─ icon-512.png
 ```
 
-이 폴더를 웹호스팅(예: Github Pages, Netlify, Vercel 등)에 올리면 접속 가능합니다.
-(호스팅 방법은 별도 문의 시 안내드릴 수 있습니다.)
+이 폴더를 웹호스팅에 올리면 어디서든 접속 가능합니다.
+구체적인 호스팅 방법은 아래 "🌐 호스팅하기" 섹션을 참고하세요.
+
+---
+
+## 🌐 호스팅하기 (Github Pages)
+
+파일을 인터넷에 올려야 모바일/PC 어디서든 접속할 수 있습니다.
+무료로 쉽게 할 수 있는 **Github Pages**를 이용한 방법을 안내합니다.
+
+**준비물**: Github 계정 (무료 가입: https://github.com)
+
+### ① 저장소(Repository) 만들기
+
+1. Github 로그인 → 우측 상단 **"+"** → **"New repository"** 클릭
+2. Repository name에 **`my-schedule`** 입력 (아래 "경로 주의사항" 참고)
+3. **Public**(공개) 선택 → **Create repository** 클릭
+
+> ⚠️ Public으로 만들면 저장소 내용이 전체 공개됩니다. 저장소에
+> `config.js`를 올릴 경우 그 안의 Firebase/API 키도 함께 공개된다는
+> 점을 꼭 인지하고 있어야 합니다. (완전히 숨기고 싶으면 Private
+> 저장소가 필요하며, Github Pages를 Private 저장소에서 쓰려면
+> 유료 플랜이 필요할 수 있습니다)
+
+### ② 파일 업로드
+
+1. 저장소 화면에서 **"uploading an existing file"** 클릭
+2. `index.html`, `config.js`(본인이 작성한 파일), `manifest.json`, `sw.js`,
+   `icon-192.png`, `icon-512.png`를 전부 드래그해서 업로드
+3. 하단에 커밋 메시지 입력(예: "초기 업로드") → **Commit changes** 클릭
+
+### ③ Github Pages 활성화
+
+1. 저장소 상단 메뉴 **Settings** 클릭
+2. 왼쪽 메뉴 **Pages** 클릭
+3. **Source**를 **"Deploy from a branch"**로 설정
+4. Branch는 **main**(또는 master), 폴더는 **/ (root)** 선택 → **Save**
+5. 몇 분 기다리면 아래와 같은 주소가 생성됩니다:
+   ```
+   https://[본인아이디].github.io/my-schedule/
+   ```
+
+### ④ 경로 주의사항 (중요)
+
+현재 코드의 `manifest.json`, `sw.js`, `index.html`이 **`/my-schedule/`**
+경로를 기준으로 작성되어 있어서, Github 저장소 이름도 반드시
+**`my-schedule`**로 맞춰야 아이콘/오프라인 캐싱이 정상 동작합니다.
+
+| 저장소 이름 | 결과 |
+|---|---|
+| `my-schedule` | ✅ 바로 정상 동작 |
+| 다른 이름(예: `work-cal`) | ⚠️ 경로 불일치로 오류 가능 (코드 내 경로 전부 수정 필요) |
 
 ---
 
 ## 📱 모바일에 앱처럼 설치하는 방법
 
-1. 배포된 주소를 모바일 브라우저(Chrome/Safari)로 접속
+1. 호스팅된 주소를 모바일 브라우저(Chrome/Safari)로 접속
 2. **공유 버튼 → "홈 화면에 추가"** 선택
 3. 설치 완료! 이후 앱 아이콘을 눌러서 바로 실행 가능
 
@@ -243,7 +293,7 @@ function initFirebase(){
 
 ---
 
-### 📊 옵션 비교
+### 📊 보안 옵션 비교
 
 | 옵션 | 보안 수준 | 코드 수정 필요 여부 | 난이도 |
 |---|---|---|---|
@@ -256,9 +306,11 @@ function initFirebase(){
 ## ⚠️ 주의사항
 
 - `config.js` 파일은 **본인의 Firebase/API 키가 담긴 개인 파일**입니다.
-  - 다른 사람과 공유하거나 Github 등 공개된 곳에 올리지 마세요.
+  - 다른 사람과 공유하거나 Public Github 저장소 등 공개된 곳에
+    그대로 올리지 마세요.
   - 이 파일을 공유하면 다른 사람이 내 근무 데이터에 접근할 수 있습니다.
-- 공공데이터포털 API는 **본인 계정으로 직접 신청**받아 사용하세요. (여러 명이 한 키를 같이 쓰면 호출 제한에 걸릴 수 있습니다)
+- 공공데이터포털 API는 **본인 계정으로 직접 신청**받아 사용하세요.
+  (여러 명이 한 키를 같이 쓰면 호출 제한에 걸릴 수 있습니다)
 
 ---
 
@@ -271,6 +323,7 @@ function initFirebase(){
 | 공휴일이 표시되지 않음 | 공공데이터포털 API 키가 정확한지, 승인이 완료됐는지 확인 |
 | PIN이 기억나지 않음 | Firebase 콘솔 → Realtime Database → `myPin` 값을 직접 확인/수정 |
 | 보안 규칙 적용 후 동기화가 안 됨 | Authentication에서 익명 로그인이 켜져 있는지, 코드 4줄이 정확히 추가됐는지 확인 |
+| Github Pages 아이콘/캐싱이 안 됨 | 저장소 이름이 `my-schedule`인지 확인 |
 
 ---
 
